@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNFPA Bangladesh CP10 Indicators Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0066CC;
+            --primary-orange: #FF6600;
+            --light-blue: #E6F2FF;
+            --light-orange: #FFF0E6;
+            --dark-blue: #004C99;
+            --dark-orange: #CC5200;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .intro {
+            background-color: white;
+            padding: 2rem;
+            margin: 2rem auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .visualization-section {
+            margin: 3rem 0;
+        }
+        
+        .section-title {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--primary-orange);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-title {
+            color: var(--dark-blue);
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            margin-bottom: 1rem;
+        }
+        
+        .source-box {
+            background-color: var(--light-blue);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .source-title {
+            font-weight: bold;
+            color: var(--dark-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .explanation {
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        footer {
+            background-color: var(--dark-blue);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>UNFPA Bangladesh CP10 Indicators Analysis</h1>
+            <p class="subtitle">Comprehensive analysis of sexual and reproductive health, gender equality, and population dynamics across 10 priority districts</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="intro">
+            <h2>About This Dashboard</h2>
+            <p>This dashboard presents a thematic analysis of UNFPA Bangladesh's Country Programme 10 (CP10) indicators, tracking progress across sexual and reproductive health, gender equality, and population dynamics. The visualizations highlight key trends, regional disparities, and progress toward 2026 targets across 10 priority districts in Bangladesh.</p>
+        </div>
+        
+        <!-- Visualization 1: Maternal Health Trends -->
+        <section class="visualization-section">
+            <h2 class="section-title">Maternal Health Trends</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">Maternal Mortality Ratio (MMR) Trends and Targets</h3>
+                <div class="chart-wrapper">
+                    <canvas id="mmrChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>ICPD_to update - brb (MMR data 1986-2023), 2. CP10_Outcome (Baseline 165/100,000, Target 100/100,000 by 2026)</p>
+                </div>
+                <div class="explanation">
+                    <p>Bangladesh has made significant progress in reducing maternal mortality, with MMR declining from 648 in 1986 to 136 in 2023. However, the country is slightly off-track to achieve the 2026 target of 100/100,000 live births. The 2023 value of 136 shows improvement from the 2022 value of 153, indicating positive momentum.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 2: Family Planning Indicators -->
+        <section class="visualization-section">
+            <h2 class="section-title">Family Planning Indicators</h2>
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3 class="chart-title">Contraceptive Prevalence Rate (mCPR) Trends</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="cprChart"></canvas>
+                    </div>
+                    <div class="source-box">
+                        <div class="source-title">Data Sources:</div>
+                        <p>ICPD Trend Analysis Bangladesh (mCPR data 1993-2022), 2. CP10_Outcome (Baseline 63.9%, Target 80% by 2026)</p>
+                    </div>
+                    <div class="explanation">
+                        <p>Modern Contraceptive Prevalence Rate has shown steady improvement over the past three decades, rising from 36.2% in 1993 to 65.6% in 2021. However, there was a slight decline to 62.1% in 2023. Significant efforts are needed to reach the 2026 target of 80% coverage with modern methods.</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Postpartum Family Planning (PPFP) by District</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="ppfpChart"></canvas>
+                    </div>
+                    <div class="source-box">
+                        <div class="source-title">Data Sources:</div>
+                        <p>Sum_Facility_District (PPFP data Jan-Jun 2023), CP10_Output (PPFP indicators)</p>
+                    </div>
+                    <div class="explanation">
+                        <p>Cox's Bazar leads in PPFP services with 3,972 cases in Jan-Mar 2023, followed by Jamalpur (1,856) and Gaibandha (1,034). Regional disparities are evident, with some districts showing significantly lower uptake of postpartum family planning services.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 3: Gender-Based Violence Services -->
+        <section class="visualization-section">
+            <h2 class="section-title">Gender-Based Violence Services</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">GBV Medical Care Services Across Districts</h3>
+                <div class="chart-wrapper">
+                    <canvas id="gbvChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>Sum_Facility_District (GBV medical care data Jan-Jun 2023), CP10_Output (GBV service indicators)</p>
+                </div>
+                <div class="explanation">
+                    <p>Cox's Bazar reported the highest number of GBV medical care cases (157 in Jan-Mar, 186 in Apr-Jun 2023), likely reflecting both higher incidence and better service availability. Several districts reported zero cases, which may indicate underreporting or service gaps rather than absence of GBV.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 4: Adolescent Health -->
+        <section class="visualization-section">
+            <h2 class="section-title">Adolescent Health</h2>
+            <div class="grid-2">
+                <div class="chart-container">
+                    <h3 class="chart-title">Adolescent Birth Rate Trends</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="adolescentChart"></canvas>
+                    </div>
+                    <div class="source-box">
+                        <div class="source-title">Data Sources:</div>
+                        <p>ICPD_to update - brb (Adolescent birth rate 1995-2023), 2. CP10_Outcome (Baseline 74/1000, Target 60/1000 by 2026)</p>
+                    </div>
+                    <div class="explanation">
+                        <p>Adolescent birth rate has declined significantly from 127 in 1995 to 73 in 2023. While progress has been made, the current rate of 73 remains above the 2026 target of 60, indicating need for continued focus on adolescent sexual and reproductive health services.</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Child Marriage Prevalence by District</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="childMarriageChart"></canvas>
+                    </div>
+                    <div class="source-box">
+                        <div class="source-title">Data Sources:</div>
+                        <p>2. CP10_Outcome (District-level data from MICS 2019), National baseline 51.4%</p>
+                    </div>
+                    <div class="explanation">
+                        <p>Child marriage prevalence varies significantly across districts, with Bagerhat (69.8%), Gaibandha (62%), and Sirajganj (61.5%) showing the highest rates. Cox's Bazar (36.6%) and Bandarban (31.7%) have comparatively lower rates. The national target is to reduce this to 30% by 2026.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 5: Service Coverage Comparison -->
+        <section class="visualization-section">
+            <h2 class="section-title">Service Coverage Comparison</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">Skilled Birth Attendance by District</h3>
+                <div class="chart-wrapper">
+                    <canvas id="sbaChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>2. CP10_Outcome (District-level skilled birth attendance from MICS 2019), National baseline 59%, Target 72% by 2026</p>
+                </div>
+                <div class="explanation">
+                    <p>Significant disparities exist in skilled birth attendance across districts, with Dhaka (79.9%) and Bagerhat (65.2%) showing higher coverage, while Bandarban (18.7%) and Jamalpur (28.2%) lag considerably. These disparities highlight the need for targeted interventions in low-performing districts.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 6: Post-Abortion Care -->
+        <section class="visualization-section">
+            <h2 class="section-title">Post-Abortion Care Services</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">Post-Abortion Care (PAC) Services by District</h3>
+                <div class="chart-wrapper">
+                    <canvas id="pacChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>Sum_Facility_District (PAC data Jan-Jun 2023)</p>
+                </div>
+                <div class="explanation">
+                    <p>Cox's Bazar provides the highest volume of PAC services (488 in Jan-Mar, 519 in Apr-Jun 2023), followed by Patuakhali and Sirajganj. Several districts show minimal PAC service provision, indicating potential gaps in comprehensive abortion care services.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 7: Menstrual Regulation -->
+        <section class="visualization-section">
+            <h2 class="section-title">Menstrual Regulation Services</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">Menstrual Regulation (MR) Services by District</h3>
+                <div class="chart-wrapper">
+                    <canvas id="mrChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>Sum_Facility_District (MR data Jan-Jun 2023)</p>
+                </div>
+                <div class="explanation">
+                    <p>Cox's Bazar leads in MR service provision with 92 cases in Jan-Mar and 86 in Apr-Jun 2023. Noakhali shows a significant increase in the second quarter (from 68 to 164 cases). Several districts report minimal MR services, potentially indicating access barriers or reporting issues.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 8: Fertility Trends -->
+        <section class="visualization-section">
+            <h2 class="section-title">Fertility Trends</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">Total Fertility Rate (TFR) Historical Trends</h3>
+                <div class="chart-wrapper">
+                    <canvas id="tfrChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>ICPD_to update - brb (TFR data 1974-2023)</p>
+                </div>
+                <div class="explanation">
+                    <p>Bangladesh has experienced a remarkable fertility transition, with TFR declining from 6.8 in 1974 to 2.17 in 2023. This represents significant progress in family planning acceptance and reproductive health services, though the rate has slightly increased from the low of 2.04 in 2019-2020.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 9: ANC Coverage -->
+        <section class="visualization-section">
+            <h2 class="section-title">Antenatal Care Coverage</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">Four or More Antenatal Care Visits by District</h3>
+                <div class="chart-wrapper">
+                    <canvas id="ancChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>CP10_Output (ANC4 coverage data 2022-2023)</p>
+                </div>
+                <div class="explanation">
+                    <p>ANC4 coverage varies significantly across districts, with Jamalpur (31.4%) and Cox's Bazar (19.5%) showing higher rates in 2023, while Barguna (2.3%) and Patuakhali (4.0%) have critically low coverage. These disparities highlight the need for targeted interventions to improve antenatal care utilization.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Visualization 10: Progress Towards Targets -->
+        <section class="visualization-section">
+            <h2 class="section-title">Progress Towards 2026 Targets</h2>
+            <div class="chart-container">
+                <h3 class="chart-title">CP10 Outcome Indicators: Baseline vs Progress vs Target</h3>
+                <div class="chart-wrapper">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div class="source-box">
+                    <div class="source-title">Data Sources:</div>
+                    <p>2. CP10_Outcome (Baseline, progress, and target data for key indicators)</p>
+                </div>
+                <div class="explanation">
+                    <p>Progress toward 2026 targets varies across indicators. While maternal mortality reduction is on track, contraceptive prevalence and skilled birth attendance need acceleration. Adolescent birth rate reduction and child marriage elimination require significant efforts to achieve targets. GBV service reporting shows improvement but likely underrepresents actual need.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>UNFPA Bangladesh CP10 Indicators Analysis Dashboard</p>
+            <p>Data Source: CP10 Indicators Progress (as of Dec 2024)</p>
+        </div>
+    </footer>
+
+    <script>
+        // Set consistent colors for the charts
+        const primaryBlue = '#0066CC';
+        const primaryOrange = '#FF6600';
+        const lightBlue = '#4D94FF';
+        const lightOrange = '#FF944D';
+        const mutedBlue = '#B3D9FF';
+        const mutedOrange = '#FFD9B3';
+        
+        // Visualization 1: MMR Trends
+        const mmrCtx = document.getElementById('mmrChart').getContext('2d');
+        new Chart(mmrCtx, {
+            type: 'line',
+            data: {
+                labels: [1986, 1991, 1995, 2005, 2010, 2019, 2020, 2021, 2022, 2023],
+                datasets: [
+                    {
+                        label: 'MMR (per 100,000 live births)',
+                        data: [648, 472, 447, 348, 216, 165, 163, 168, 153, 136],
+                        borderColor: primaryBlue,
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '2026 Target',
+                        data: [null, null, null, null, null, null, null, null, null, 100],
+                        borderColor: primaryOrange,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: primaryOrange,
+                        pointRadius: 6,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Maternal Mortality Ratio Trend (1986-2023)'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'MMR (per 100,000 live births)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Year'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 2: CPR Trends
+        const cprCtx = document.getElementById('cprChart').getContext('2d');
+        new Chart(cprCtx, {
+            type: 'line',
+            data: {
+                labels: [1993, 2000, 2005, 2010, 2015, 2019, 2020, 2021, 2022, 2023],
+                datasets: [
+                    {
+                        label: 'mCPR (%)',
+                        data: [36.2, 43.4, 47.3, 52.1, 54.1, 63.4, 63.9, 65.6, 63.3, 62.1],
+                        borderColor: primaryBlue,
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '2026 Target',
+                        data: [null, null, null, null, null, null, null, null, null, 80],
+                        borderColor: primaryOrange,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: primaryOrange,
+                        pointRadius: 6,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Modern Contraceptive Prevalence Rate (1993-2023)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Percentage (%)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 3: PPFP by District
+        const ppfpCtx = document.getElementById('ppfpChart').getContext('2d');
+        new Chart(ppfpCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Cox\'s Bazar', 'Jamalpur', 'Gaibandha', 'Noakhali', 'Sirajganj', 'Patuakhali', 'Bagerhat', 'Barguna', 'Bandarban', 'Dhaka'],
+                datasets: [
+                    {
+                        label: 'Jan-Mar 2023',
+                        data: [3972, 1856, 1034, 1888, 1806, 1451, 995, 381, 345, 694],
+                        backgroundColor: primaryBlue
+                    },
+                    {
+                        label: 'Apr-Jun 2023',
+                        data: [3768, 1850, 971, 1603, 1629, 1456, 717, 433, 358, 682],
+                        backgroundColor: primaryOrange
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Postpartum Family Planning Services by District'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Cases'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 4: GBV Services
+        const gbvCtx = document.getElementById('gbvChart').getContext('2d');
+        new Chart(gbvCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Cox\'s Bazar', 'Patuakhali', 'Barguna', 'Jamalpur', 'Bandarban', 'Sirajganj', 'Bagerhat', 'Noakhali', 'Gaibandha', 'Dhaka'],
+                datasets: [
+                    {
+                        label: 'Jan-Mar 2023',
+                        data: [157, 73, 27, 21, 11, 8, 10, 2, 0, 0],
+                        backgroundColor: primaryBlue
+                    },
+                    {
+                        label: 'Apr-Jun 2023',
+                        data: [186, 37, 30, 27, 12, 15, 25, 3, 0, 0],
+                        backgroundColor: primaryOrange
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'GBV Medical Care Services by District'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Cases'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 5: Adolescent Birth Rate
+        const adolescentCtx = document.getElementById('adolescentChart').getContext('2d');
+        new Chart(adolescentCtx, {
+            type: 'line',
+            data: {
+                labels: [1995, 2000, 2005, 2010, 2015, 2020, 2021, 2022, 2023],
+                datasets: [
+                    {
+                        label: 'Adolescent Birth Rate (per 1000)',
+                        data: [127, 110, 98, 81, null, null, 88, null, 73],
+                        borderColor: primaryBlue,
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: '2026 Target',
+                        data: [null, null, null, null, null, null, null, null, 60],
+                        borderColor: primaryOrange,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: primaryOrange,
+                        pointRadius: 6,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Adolescent Birth Rate Trend (1995-2023)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Births per 1000 women aged 15-19'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 6: Child Marriage
+        const childMarriageCtx = document.getElementById('childMarriageChart').getContext('2d');
+        new Chart(childMarriageCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Bagerhat', 'Gaibandha', 'Sirajganj', 'Jamalpur', 'Patuakhali', 'Barguna', 'Noakhali', 'Dhaka', 'Cox\'s Bazar', 'Bandarban'],
+                datasets: [
+                    {
+                        label: 'Percentage of women married before 18',
+                        data: [69.8, 62.0, 61.5, 58.5, 58.6, 60.3, 42.8, 41.0, 36.6, 31.7],
+                        backgroundColor: [
+                            primaryBlue, primaryBlue, primaryBlue, 
+                            lightBlue, lightBlue, lightBlue,
+                            mutedBlue, mutedBlue, mutedBlue, mutedBlue
+                        ]
+                    },
+                    {
+                        label: '2026 Target',
+                        data: [30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+                        type: 'line',
+                        borderColor: primaryOrange,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Child Marriage Prevalence by District (Women 20-24 married before 18)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 80,
+                        title: {
+                            display: true,
+                            text: 'Percentage (%)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 7: Skilled Birth Attendance
+        const sbaCtx = document.getElementById('sbaChart').getContext('2d');
+        new Chart(sbaCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Dhaka', 'Bagerhat', 'Gaibandha', 'Barguna', 'Noakhali', 'Patuakhali', 'Sirajganj', 'Cox\'s Bazar', 'Jamalpur', 'Bandarban'],
+                datasets: [
+                    {
+                        label: 'Skilled Birth Attendance (%)',
+                        data: [79.9, 65.2, 55.4, 48.4, 47.1, 38.4, 39.5, 33.8, 28.2, 18.7],
+                        backgroundColor: [
+                            primaryOrange, primaryOrange, lightOrange,
+                            lightOrange, mutedOrange, mutedOrange,
+                            mutedOrange, mutedOrange, mutedOrange, mutedOrange
+                        ]
+                    },
+                    {
+                        label: '2026 Target',
+                        data: [72, 72, 72, 72, 72, 72, 72, 72, 72, 72],
+                        type: 'line',
+                        borderColor: primaryBlue,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Skilled Birth Attendance by District'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Percentage (%)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 8: PAC Services
+        const pacCtx = document.getElementById('pacChart').getContext('2d');
+        new Chart(pacCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Cox\'s Bazar', 'Patuakhali', 'Sirajganj', 'Noakhali', 'Jamalpur', 'Bagerhat', 'Gaibandha', 'Barguna', 'Bandarban', 'Dhaka'],
+                datasets: [
+                    {
+                        label: 'Jan-Mar 2023',
+                        data: [488, 162, 146, 89, 89, 68, 44, 48, 3, 182],
+                        backgroundColor: primaryBlue
+                    },
+                    {
+                        label: 'Apr-Jun 2023',
+                        data: [519, 197, 183, 171, 81, 94, 85, 11, 0, 21],
+                        backgroundColor: primaryOrange
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Post-Abortion Care Services by District'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Cases'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 9: MR Services
+        const mrCtx = document.getElementById('mrChart').getContext('2d');
+        new Chart(mrCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Cox\'s Bazar', 'Noakhali', 'Patuakhali', 'Jamalpur', 'Sirajganj', 'Barguna', 'Gaibandha', 'Bagerhat', 'Bandarban', 'Dhaka'],
+                datasets: [
+                    {
+                        label: 'Jan-Mar 2023',
+                        data: [92, 68, 99, 30, 42, 28, 26, 17, 2, 0],
+                        backgroundColor: primaryBlue
+                    },
+                    {
+                        label: 'Apr-Jun 2023',
+                        data: [86, 164, 109, 53, 23, 9, 33, 15, 0, 0],
+                        backgroundColor: primaryOrange
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Menstrual Regulation Services by District'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Cases'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 10: TFR Trends
+        const tfrCtx = document.getElementById('tfrChart').getContext('2d');
+        new Chart(tfrCtx, {
+            type: 'line',
+            data: {
+                labels: [1974, 1981, 1991, 2000, 2010, 2019, 2020, 2021, 2022, 2023],
+                datasets: [
+                    {
+                        label: 'Total Fertility Rate',
+                        data: [6.8, 6.2, 4.2, 3.1, 2.3, 2.04, 2.04, 2.05, 2.2, 2.17],
+                        borderColor: primaryBlue,
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Total Fertility Rate Trend (1974-2023)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Children per Woman'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 11: ANC Coverage
+        const ancCtx = document.getElementById('ancChart').getContext('2d');
+        new Chart(ancCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jamalpur', 'Cox\'s Bazar', 'Noakhali', 'Bagerhat', 'Bandarban', 'Sirajganj', 'Gaibandha', 'Patuakhali', 'Barguna'],
+                datasets: [
+                    {
+                        label: '2022 ANC4 Coverage (%)',
+                        data: [19.9, 9.7, 10.9, 9.7, 13.2, 7.3, 5.0, 4.6, 2.2],
+                        backgroundColor: primaryBlue
+                    },
+                    {
+                        label: '2023 ANC4 Coverage (%)',
+                        data: [31.4, 19.5, 18.7, 16.4, 14.2, 6.8, null, 4.0, 2.3],
+                        backgroundColor: primaryOrange
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Four or More Antenatal Care Visits by District'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 35,
+                        title: {
+                            display: true,
+                            text: 'Percentage (%)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Visualization 12: Progress Towards Targets
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+        new Chart(progressCtx, {
+            type: 'bar',
+            data: {
+                labels: ['MMR', 'Skilled Birth Attendance', 'mCPR', 'Adolescent Birth Rate', 'Child Marriage', 'Demand Satisfied'],
+                datasets: [
+                    {
+                        label: 'Baseline',
+                        data: [165, 59, 63.9, 74, 51.4, 77.4],
+                        backgroundColor: mutedBlue
+                    },
+                    {
+                        label: 'Latest Progress',
+                        data: [136, 69.8, 62.1, 73, 40, 73.9],
+                        backgroundColor: primaryBlue
+                    },
+                    {
+                        label: '2026 Target',
+                        data: [100, 72, 80, 60, 30, 80],
+                        backgroundColor: primaryOrange
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Progress Towards 2026 Targets for Key Indicators'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Rate/Percentage'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
