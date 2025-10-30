@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangladesh Health Data Dashboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Custom font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        /* Style for D3.js tooltips */
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px;
+            font: 12px sans-serif;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        /* Custom styles for D3 axes */
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #9ca3af; /* gray-400 */
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-size: 12px;
+            fill: #4b5563; /* gray-600 */
+        }
+        .gridline {
+            stroke: #e5e7eb; /* gray-200 */
+            stroke-opacity: 0.7;
+            shape-rendering: crispEdges;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-screen-2xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Bangladesh CP10 & MMR Data Dashboard</h1>
+        <p class="text-lg text-gray-600 mb-6">An analysis of key health indicators, service delivery, and programmatic goals.</p>
+
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Chart 1: MMR Trend -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">1. Maternal Mortality Ratio (MMR) Trend</h3>
+                <p class="text-sm text-gray-500 mb-4">Shows the significant long-term decline in MMR, highlighting recent progress.</p>
+                <div id="chart1-mmr-trend" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This chart shows the remarkable success in reducing maternal deaths, dropping from 196 in 2016 to 136 in 2023. The brief uptick in 2021 (168) likely reflects service disruption from the COVID-19 pandemic, with a strong recovery in 2022 and 2023.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">BMMS (2016), SVRS (2019-2023). Found in: `MMR_Bangladesh_SI.docx` & `2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 2: MMR vs. Targets -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">2. Progress Towards MMR Targets</h3>
+                <p class="text-sm text-gray-500 mb-4">Compares the 2023 progress against national and SDG targets.</p>
+                <div id="chart2-mmr-target" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">While progress is strong (136 in 2023) against the 2021 baseline (165), a significant acceleration is needed to meet the ambitious CP10 Target of 100 by 2026 and the ultimate SDG Target of 70 by 2030.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 3: Key Service Growth -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">3. Key Maternal Health Service Growth</h3>
+                <p class="text-sm text-gray-500 mb-4">Compares progress in crucial services between 2011 and 2022.</p>
+                <div id="chart3-service-growth" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This chart explains *how* the MMR reduction was achieved. The massive jump in Antenatal Care (ANC) from a trained provider (55% to 88%) and Postnatal Care (PNC) (29% to 55%) shows a strengthening of the entire continuum of care.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`Inputs template - 2024 ED annual report to the EB (V2).docx`</p>
+                </div>
+            </div>
+
+            <!-- Chart 4: Skilled Birth Attendant Trend -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">4. Rise in Skilled Birth Attendants</h3>
+                <p class="text-sm text-gray-500 mb-4">Tracks the percentage of births attended by skilled health professionals.</p>
+                <div id="chart4-skilled-attendant" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">A steady and vital increase in skilled care during delivery is a primary driver of falling mortality. The rate has climbed from 52.6% in 2017 to 72.0% in 2023, showing consistent system-wide improvement.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`ICPD Trend Analysis Bangaldesh.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 5: Midwife Impact -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">5. The Impact of Midwives</h3>
+                <p class="text-sm text-gray-500 mb-4">Share of normal vaginal deliveries managed by midwives (2018 vs. 2023).</p>
+                <div id="chart5-midwife-impact" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This is one of the most significant strategic successes. The deployment of midwives has had a massive impact, with their management of normal deliveries jumping from 24% to 89% in just five years. This proves the strategy's effectiveness.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`Inputs template - 2024 ED annual report to the EB (V2).docx`</p>
+                </div>
+            </div>
+
+            <!-- Chart 6: Health Access Disparities -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">6. Critical Access Disparities (2023)</h3>
+                <p class="text-sm text-gray-500 mb-4">Compares healthcare access for displaced vs. non-displaced households.</p>
+                <div id="chart6-disparities" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">National averages hide a critical problem. Displaced households are far less likely to receive care: 72% of deliveries are at home (vs 39%) and only 44% see a skilled attendant (vs 77%). This highlights the key challenge for future interventions.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`MMR_Bangladesh_SI.docx`</p>
+                </div>
+            </div>
+            
+            <!-- Chart 7: Child Marriage Progress -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">7. Child Marriage (Women 20-24)</h3>
+                <p class="text-sm text-gray-500 mb-4">Progress on women married by age 18, baseline vs. 2026 target.</p>
+                <div id="chart7-child-marriage" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This chart shows the baseline for a key CP10 outcome. The goal is to reduce the percentage of women (aged 20-24) who were married by 18 from 51.4% (2019 baseline) to 41.0% by 2026. This is a crucial indicator for maternal health and GBV.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 8: Unmet Need for FP -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">8. Unmet Need for Family Planning</h3>
+                <p class="text-sm text-gray-500 mb-4">Progress towards the 2026 target for unmet need (all women).</p>
+                <div id="chart8-unmet-need" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This tracks another core CP10 goal. The baseline for unmet need for family planning was set at 11.9% in 2022, with a clear target to reduce this to 8.0% by 2026. This is a direct measure of program success in expanding access to FP.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+            
+            <!-- Chart 9: PPFP Services -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-2 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">9. Top 5 Districts: PPFP Services</h3>
+                <p class="text-sm text-gray-500 mb-4">Total Postpartum Family Planning services (Jan-Jun 2023).</p>
+                <div id="chart9-ppfp" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This chart shows the total volume of Postpartum Family Planning (PPFP) services delivered in the first half of 2023. Cox's Bazar shows a significantly higher volume, likely reflecting the concentrated programmatic focus and population size in the area.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`District Summary.csv` (Aggregated Jan-Jun 2023)</p>
+                </div>
+            </div>
+
+            <!-- Chart 10: GBV Services -->
+            <div class="bg-white p-6 rounded-lg shadow-md lg:col-span-1 flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">10. Top 5 Districts: GBV Medical Care</h3>
+                <p class="text-sm text-gray-500 mb-4">Total GBV medical care services provided (Jan-Jun 2023).</p>
+                <div id="chart10-gbv" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This shows the provision of GBV medical care services, highlighting where support is being most actively delivered. Similar to PPFP, Cox's Bazar and Noakhali show the highest number of cases, reflecting targeted interventions.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`District Summary.csv` (Aggregated Jan-Jun 2023)</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- New Section: Baseline vs. Target Visuals -->
+        <h2 class="text-3xl font-bold text-gray-800 mt-12 mb-6">CP10 Baseline vs. Target Analysis</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Chart 11: Adolescent Birth Rate -->
+            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">11. Adolescent Birth Rate (per 1,000)</h3>
+                <p class="text-sm text-gray-500 mb-4">Tracks progress on reducing births per 1,000 women aged 15-19.</p>
+                <div id="chart11-abr" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">The goal is to significantly reduce the adolescent birth rate from a 2019 baseline of 80.3 to 60.0 by 2026. The 2023 progress (76.4) shows a steady downward trend, but acceleration is needed.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 12: Skilled Birth Attendants -->
+            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">12. Skilled Birth Attendants</h3>
+                <p class="text-sm text-gray-500 mb-4">Percentage of births attended by skilled health personnel.</p>
+                <div id="chart12-sba" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This key indicator for reducing MMR shows good progress. Starting from a 69.5% baseline in 2022, it has already reached 72.0% in 2023, moving well towards the 2026 target of 80.0%.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 13: Child Marriage (by 15) -->
+            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">13. Child Marriage (Women 20-24)</h3>
+                <p class="text-sm text-gray-500 mb-4">Progress on women married by age 15, baseline vs. 2026 target.</p>
+                <div id="chart13-child-marriage-15" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This chart focuses on the most severe cases of child marriage (by age 15). The goal is to reduce the rate from 15.5% (2019 baseline) to 10.0% by 2026. Progress on this indicator is not yet reported.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 14: Women's Decision Making -->
+            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">14. Women's Decision Making on SRH</h3>
+                <p class="text-sm text-gray-500 mb-4">Women (15-49) making their own decisions on SRH.</p>
+                <div id="chart14-decision" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This vital indicator for autonomy shows the percentage of women making their own decisions on sexual relations, contraception, and healthcare. It has progressed from 45.5% (2022) to 47.1% (2024).</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+            <!-- Chart 15: Contraceptive Prevalence Rate -->
+            <div class="bg-white p-6 rounded-lg shadow-md flex flex-col">
+                <h3 class="text-xl font-semibold text-gray-700 mb-1">15. Contraceptive Prevalence (Modern)</h3>
+                <p class="text-sm text-gray-500 mb-4">Percentage of women using a modern contraceptive method.</p>
+                <div id="chart15-cpr" class="w-full h-80 flex-grow"></div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="font-semibold text-gray-700">Explanation</h4>
+                    <p class="text-sm text-gray-600 mt-1">This tracks the goal of increasing modern contraceptive use from 63.1% (2022 baseline) to 70.0% by 2026. Current data shows the progress at the baseline level, awaiting new survey data.</p>
+                    <h5 class="font-semibold text-gray-700 mt-2 text-xs uppercase">Source</h5>
+                    <p class="text-xs text-gray-500 mt-1">`2. CP10_Outcome.csv`</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Tooltip div -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Color Scheme ---
+            const colorBlue = "#2563eb"; // Bright Blue
+            const colorOrange = "#f97316"; // Bright Orange
+            const colorGreen = "#16a34a";
+            const colorRed = "#dc2626";
+            const colorGray = "#6b7280";
+            const colorLightBlue = "#93c5fd";
+            const colorLightOrange = "#fed7aa";
+
+            // --- Tooltip Functions ---
+            const tooltip = d3.select("#tooltip");
+            const showTooltip = (event, d, content) => {
+                tooltip.transition().duration(200).style("opacity", .9);
+                tooltip.html(content)
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            };
+            const hideTooltip = () => {
+                tooltip.transition().duration(500).style("opacity", 0);
+            };
+
+            // --- Reusable D3 function to draw basic chart elements ---
+            function createChartContext(containerId) {
+                const container = d3.select(containerId);
+                if (container.node() === null) {
+                    console.error(`Container ${containerId} not found`);
+                    return null;
+                }
+                const bounds = container.node().getBoundingClientRect();
+                const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+                const width = bounds.width - margin.left - margin.right;
+                const height = bounds.height - margin.top - margin.bottom;
+
+                container.select("svg").remove(); // Clear previous chart
+
+                const svg = container.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom);
+                
+                const g = svg.append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+                
+                return { svg, g, width, height, margin };
+            }
+
+            // --- Chart 1: MMR Trend (Line Chart) ---
+            function drawChart1() {
+                const data = [
+                    { year: 2016, value: 196, source: "BMMS" },
+                    { year: 2019, value: 163, source: "SVRS" },
+                    { year: 2021, value: 168, source: "SVRS" },
+                    { year: 2022, value: 153, source: "SVRS" },
+                    { year: 2023, value: 136, source: "SVRS" }
+                ];
+                
+                const ctx = createChartContext("#chart1-mmr-trend");
+                if (!ctx) return;
+
+                const x = d3.scaleLinear()
+                    .domain(d3.extent(data, d => d.year))
+                    .range([0, ctx.width]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.value) + 20])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y));
+                
+                // Y-axis label
+                ctx.svg.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 15)
+                    .attr("x", 0 - (ctx.height / 2) - ctx.margin.top)
+                    .attr("dy", "1em")
+                    .style("text-anchor", "middle")
+                    .attr("class", "text-xs fill-gray-600")
+                    .text("MMR per 100,000 live births");
+
+                // Add Y gridlines
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                const line = d3.line()
+                    .x(d => x(d.year))
+                    .y(d => y(d.value))
+                    .curve(d3.curveMonotoneX);
+
+                ctx.g.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", colorBlue)
+                    .attr("stroke-width", 3)
+                    .attr("d", line);
+
+                ctx.g.selectAll(".dot")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("cx", d => x(d.year))
+                    .attr("cy", d => y(d.value))
+                    .attr("r", 5)
+                    .attr("fill", colorBlue)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.year} (${d.source})</strong><br>MMR: ${d.value}`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 2: MMR vs. Targets (Bar Chart) ---
+            function drawChart2() {
+                const data = [
+                    { name: "Baseline (2021)", value: 165, color: colorGray },
+                    { name: "Progress (2023)", value: 136, color: colorBlue },
+                    { name: "Target (2026)", value: 100, color: colorLightOrange },
+                    { name: "SDG Target (2030)", value: 70, color: colorOrange }
+                ];
+
+                const ctx = createChartContext("#chart2-mmr-target");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.value) + 20])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>MMR: ${d.value}`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 3: Key Service Growth (Grouped Bar) ---
+            function drawChart3() {
+                const data = [
+                    { service: "ANC (Trained Provider)", year: "2011", value: 55 },
+                    { service: "ANC (Trained Provider)", year: "2022", value: 88 },
+                    { service: "PNC (within 2 days)", year: "2011", value: 29 },
+                    { service: "PNC (within 2 days)", year: "2022", value: 55 }
+                ];
+
+                const ctx = createChartContext("#chart3-service-growth");
+                if (!ctx) return;
+
+                const services = ["ANC (Trained Provider)", "PNC (within 2 days)"];
+                const years = ["2011", "2022"];
+
+                const x0 = d3.scaleBand()
+                    .domain(services)
+                    .rangeRound([0, ctx.width])
+                    .paddingInner(0.2);
+
+                const x1 = d3.scaleBand()
+                    .domain(years)
+                    .rangeRound([0, x0.bandwidth()])
+                    .padding(0.05);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([ctx.height, 0]);
+
+                const color = d3.scaleOrdinal()
+                    .domain(years)
+                    .range([colorLightBlue, colorBlue]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x0));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                const serviceGroup = ctx.g.selectAll(".service-group")
+                    .data(services)
+                    .enter().append("g")
+                    .attr("transform", d => `translate(${x0(d)},0)`);
+
+                serviceGroup.selectAll("rect")
+                    .data(d => data.filter(item => item.service === d))
+                    .enter().append("rect")
+                    .attr("x", d => x1(d.year))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x1.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => color(d.year))
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.year}</strong><br>${d.service}: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+                
+                // Legend
+                const legend = ctx.svg.selectAll(".legend")
+                    .data(years)
+                    .enter().append("g")
+                    .attr("transform", (d, i) => `translate(${ctx.width - 80}, ${i * 20 + 20})`);
+
+                legend.append("rect")
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .style("fill", color);
+
+                legend.append("text")
+                    .attr("x", 24)
+                    .attr("y", 9)
+                    .attr("dy", ".35em")
+                    .style("text-anchor", "start")
+                    .attr("class", "text-sm")
+                    .text(d => d);
+            }
+
+            // --- Chart 4: Skilled Birth Attendant (Line) ---
+            function drawChart4() {
+                const data = [
+                    { year: 2017, value: 52.6 },
+                    { year: 2022, value: 69.5 },
+                    { year: 2023, value: 72.0 }
+                ];
+
+                const ctx = createChartContext("#chart4-skilled-attendant");
+                if (!ctx) return;
+
+                const x = d3.scaleLinear()
+                    .domain(d3.extent(data, d => d.year))
+                    .range([0, ctx.width]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                const line = d3.line()
+                    .x(d => x(d.year))
+                    .y(d => y(d.value))
+                    .curve(d3.curveMonotoneX);
+
+                ctx.g.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", colorOrange)
+                    .attr("stroke-width", 3)
+                    .attr("d", line);
+
+                ctx.g.selectAll(".dot")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("cx", d => x(d.year))
+                    .attr("cy", d => y(d.value))
+                    .attr("r", 5)
+                    .attr("fill", colorOrange)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.year}</strong><br>${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 5: Midwife Impact (Bar) ---
+            function drawChart5() {
+                const data = [
+                    { year: 2018, value: 24, color: colorGray },
+                    { year: 2023, value: 89, color: colorGreen }
+                ];
+                
+                const ctx = createChartContext("#chart5-midwife-impact");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.year))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.year))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.year}</strong><br>${d.value}% of deliveries`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 6: Disparities (Grouped Bar) ---
+            function drawChart6() {
+                const data = [
+                    { metric: "Home Delivery", group: "Displaced", value: 72 },
+                    { metric: "Home Delivery", group: "Non-Displaced", value: 39 },
+                    { metric: "Skilled Birth Attendant", group: "Displaced", value: 44 },
+                    { metric: "Skilled Birth Attendant", group: "Non-Displaced", value: 77 },
+                    { metric: "Received No ANC", group: "Displaced", value: 28 },
+                    { metric: "Received No ANC", group: "Non-Displaced", value: 11 },
+                ];
+                
+                const ctx = createChartContext("#chart6-disparities");
+                if (!ctx) return;
+
+                const metrics = ["Home Delivery", "Skilled Birth Attendant", "Received No ANC"];
+                const groups = ["Displaced", "Non-Displaced"];
+
+                const x0 = d3.scaleBand()
+                    .domain(metrics)
+                    .rangeRound([0, ctx.width])
+                    .paddingInner(0.2);
+
+                const x1 = d3.scaleBand()
+                    .domain(groups)
+                    .rangeRound([0, x0.bandwidth()])
+                    .padding(0.05);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([ctx.height, 0]);
+
+                const color = d3.scaleOrdinal()
+                    .domain(groups)
+                    .range([colorOrange, colorBlue]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x0));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                const metricGroup = ctx.g.selectAll(".metric-group")
+                    .data(metrics)
+                    .enter().append("g")
+                    .attr("transform", d => `translate(${x0(d)},0)`);
+
+                metricGroup.selectAll("rect")
+                    .data(d => data.filter(item => item.metric === d))
+                    .enter().append("rect")
+                    .attr("x", d => x1(d.group))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x1.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => color(d.group))
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.group}</strong><br>${d.metric}: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+
+                // Legend
+                const legend = ctx.svg.selectAll(".legend")
+                    .data(groups)
+                    .enter().append("g")
+                    .attr("transform", (d, i) => `translate(${ctx.width - 100}, ${i * 20 + 20})`);
+
+                legend.append("rect")
+                    .attr("width", 18)
+                    .attr("height", 18)
+                    .style("fill", color);
+
+                legend.append("text")
+                    .attr("x", 24)
+                    .attr("y", 9)
+                    .attr("dy", ".35em")
+                    .style("text-anchor", "start")
+                    .attr("class", "text-sm")
+                    .text(d => d);
+            }
+
+            // --- Chart 7: Child Marriage (Bar) ---
+            function drawChart7() {
+                const data = [
+                    { name: "Baseline (2019)", value: 51.4, color: colorOrange },
+                    { name: "Target (2026)", value: 41.0, color: colorBlue }
+                ];
+                
+                const ctx = createChartContext("#chart7-child-marriage");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 60])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Value: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 8: Unmet Need for FP (Bar) ---
+            function drawChart8() {
+                const data = [
+                    { name: "Baseline (2022)", value: 11.9, color: colorOrange },
+                    { name: "Target (2026)", value: 8.0, color: colorBlue }
+                ];
+
+                const ctx = createChartContext("#chart8-unmet-need");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 15])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Value: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 9: PPFP Services (Horizontal Bar) ---
+            function drawChart9() {
+                const data = [
+                    { district: "Cox's Bazar", value: 7740 },
+                    { district: "Noakhali", value: 3491 },
+                    { district: "Jamalpur", value: 3435 },
+                    { district: "Sirajganj", value: 2314 },
+                    { district: "Gaibandha", value: 2005 }
+                ].sort((a,b) => a.value - b.value); // Sort for horizontal
+
+                const ctx = createChartContext("#chart9-ppfp");
+                if (!ctx) return;
+
+                const x = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.value)])
+                    .range([0, ctx.width]);
+
+                const y = d3.scaleBand()
+                    .domain(data.map(d => d.district))
+                    .range([ctx.height, 0])
+                    .padding(0.2);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisBottom(x).tickSize(ctx.height).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", 0)
+                    .attr("y", d => y(d.district))
+                    .attr("width", d => x(d.value))
+                    .attr("height", y.bandwidth())
+                    .attr("fill", colorBlue)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.district}</strong><br>Services: ${d3.format(",")(d.value)}`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 10: GBV Services (Horizontal Bar) ---
+            function drawChart10() {
+                const data = [
+                    { district: "Cox's Bazar", value: 343 },
+                    { district: "Noakhali", value: 232 },
+                    { district: "Patuakhali", value: 164 },
+                    { district: "Sirajganj", value: 78 },
+                    { district: "Barguna", value: 57 }
+                ].sort((a,b) => a.value - b.value); // Sort for horizontal
+                
+                const ctx = createChartContext("#chart10-gbv");
+                if (!ctx) return;
+
+                const x = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.value)])
+                    .range([0, ctx.width]);
+
+                const y = d3.scaleBand()
+                    .domain(data.map(d => d.district))
+                    .range([ctx.height, 0])
+                    .padding(0.2);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class","axis")
+                    .call(d3.axisLeft(y));
+
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisBottom(x).tickSize(ctx.height).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", 0)
+                    .attr("y", d => y(d.district))
+                    .attr("width", d => x(d.value))
+                    .attr("height", y.bandwidth())
+                    .attr("fill", colorOrange)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.district}</strong><br>Cases: ${d3.format(",")(d.value)}`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 11: Adolescent Birth Rate (Bar) ---
+            function drawChart11() {
+                const data = [
+                    { name: "Baseline (2019)", value: 80.3, color: colorOrange },
+                    { name: "Progress (2023)", value: 76.4, color: colorLightBlue },
+                    { name: "Target (2026)", value: 60.0, color: colorBlue }
+                ];
+                
+                const ctx = createChartContext("#chart11-abr");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 90])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Rate: ${d.value}`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 12: Skilled Birth Attendants (Bar) ---
+            function drawChart12() {
+                const data = [
+                    { name: "Baseline (2022)", value: 69.5, color: colorOrange },
+                    { name: "Progress (2023)", value: 72.0, color: colorLightBlue },
+                    { name: "Target (2026)", value: 80.0, color: colorBlue }
+                ];
+                
+                const ctx = createChartContext("#chart12-sba");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 100])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Rate: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 13: Child Marriage (by 15) (Bar) ---
+            function drawChart13() {
+                const data = [
+                    { name: "Baseline (2019)", value: 15.5, color: colorOrange },
+                    { name: "Target (2026)", value: 10.0, color: colorBlue }
+                ];
+                
+                const ctx = createChartContext("#chart13-child-marriage-15");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 20])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Rate: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 14: Women's Decision Making (Bar) ---
+            function drawChart14() {
+                const data = [
+                    { name: "Baseline (2022)", value: 45.5, color: colorOrange },
+                    { name: "Progress (2024)", value: 47.1, color: colorLightBlue },
+                    { name: "Target (2026)", value: 55.0, color: colorBlue }
+                ];
+                
+                const ctx = createChartContext("#chart14-decision");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 60])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Rate: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+            // --- Chart 15: Contraceptive Prevalence Rate (Bar) ---
+            function drawChart15() {
+                const data = [
+                    { name: "Baseline (2022)", value: 63.1, color: colorOrange },
+                    { name: "Target (2026)", value: 70.0, color: colorBlue }
+                ];
+                
+                const ctx = createChartContext("#chart15-cpr");
+                if (!ctx) return;
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.name))
+                    .range([0, ctx.width])
+                    .padding(0.4);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 80])
+                    .range([ctx.height, 0]);
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${ctx.height})`)
+                    .call(d3.axisBottom(x));
+
+                ctx.g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).tickFormat(d => d + "%"));
+                
+                ctx.g.append("g")
+                    .attr("class", "gridline")
+                    .call(d3.axisLeft(y).tickSize(-ctx.width).tickFormat(""));
+
+                ctx.g.selectAll(".bar")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("x", d => x(d.name))
+                    .attr("y", d => y(d.value))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => ctx.height - y(d.value))
+                    .attr("fill", d => d.color)
+                    .on("mouseover", (event, d) => showTooltip(event, d, `<strong>${d.name}</strong><br>Rate: ${d.value}%`))
+                    .on("mouseout", hideTooltip);
+            }
+
+
+            // --- Initial Draw ---
+            function drawAllCharts() {
+                drawChart1();
+                drawChart2();
+                drawChart3();
+                drawChart4();
+                drawChart5();
+                drawChart6();
+                drawChart7();
+                drawChart8();
+                drawChart9();
+                drawChart10();
+                drawChart11();
+                drawChart12();
+                drawChart13();
+                drawChart14();
+                drawChart15();
+            }
+            
+            drawAllCharts();
+
+            // --- Redraw on Resize ---
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    drawAllCharts();
+                }, 250);
+            });
+        });
+    </script>
+</body>
+</html>
+
